@@ -40,7 +40,7 @@ public class TrackAsyncTask extends BaseAsyncTask<Track> {
                 JSONObject track = trackInfo.getJSONObject(TRACK);
                 int id = track.getInt(ID);
                 String title = track.getString(TITLE);
-                String artworkUrl = track.getString(ARTWORK_URL);
+                String artworkUrl = StringUtil.initImageFull(track.getString(ARTWORK_URL));
                 int likesCount = track.getInt(LIKES_COUNT);
                 int playbackCount = track.getInt(PLAYBACK_COUNT);
                 int commentCount = track.getInt(COMMENT_COUNT);

@@ -3,6 +3,8 @@ package vn.framgia.phamthehung.soundcloud.data.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import vn.framgia.phamthehung.soundcloud.util.StringUtil;
+
 public class Track implements Parcelable {
     private int mId;
     private int mDuration;
@@ -85,7 +87,7 @@ public class Track implements Parcelable {
     }
 
     public String getStreamUrl() {
-        return mStreamUrl;
+        return StringUtil.initStreamApi(getId());
     }
 
     public void setStreamUrl(String streamUrl) {

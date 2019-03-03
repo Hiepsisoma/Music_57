@@ -1,11 +1,17 @@
 package vn.framgia.phamthehung.soundcloud.ui.genre;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.widget.ImageView;
@@ -20,11 +26,14 @@ import vn.framgia.phamthehung.soundcloud.data.model.Genre;
 import vn.framgia.phamthehung.soundcloud.data.model.Track;
 import vn.framgia.phamthehung.soundcloud.data.repository.TrackRepository;
 import vn.framgia.phamthehung.soundcloud.data.source.remote.TrackRemoteDataSource;
+import vn.framgia.phamthehung.soundcloud.service.PlayMusicInterface;
+import vn.framgia.phamthehung.soundcloud.service.PlayMusicService;
 import vn.framgia.phamthehung.soundcloud.ui.detailtrack.DetailTrackFragment;
 import vn.framgia.phamthehung.soundcloud.ui.playmusic.PlayMusicActivity;
 
 public class GenreActivity extends AppCompatActivity implements GenreContract.View,
         View.OnClickListener, GenreAdapter.OnItemClickListenerTracks {
+
     public static final String GENRE_KEY = "GENRE_KEY";
     private ImageView mImageGenre;
     private TextView mTextShuffle;
@@ -34,6 +43,7 @@ public class GenreActivity extends AppCompatActivity implements GenreContract.Vi
     private RecyclerView mRecyclerTracks;
     private GenreAdapter mGenreAdapter;
     private List<Track> mTracks;
+    private PlayMusicService mPlayMusicService;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,6 +54,18 @@ public class GenreActivity extends AppCompatActivity implements GenreContract.Vi
         initPresenter();
     }
 
+    ServiceConnection mConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            PlayMusicService.LocalBinder binder = (PlayMusicService.LocalBinder) service;
+            mPlayMusicService = binder.getService();
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
     public static Intent getIntent(Context context, Genre genre) {
         Intent intent = new Intent(context, GenreActivity.class);
         Bundle bundle = new Bundle();
@@ -64,6 +86,8 @@ public class GenreActivity extends AppCompatActivity implements GenreContract.Vi
         mTextShuffle = findViewById(R.id.text_shuffle_play);
         mProgressBar = findViewById(R.id.progress_tracks);
         mRecyclerTracks =findViewById(R.id.recycler_tracks);
+        Intent intent = new Intent(this, PlayMusicService.class);
+        bindService(intent, mConnection, BIND_AUTO_CREATE);
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -93,6 +117,7 @@ public class GenreActivity extends AppCompatActivity implements GenreContract.Vi
         mGenreAdapter = new GenreAdapter(this, mTracks,this);
         mRecyclerTracks.setAdapter(mGenreAdapter);
         mGenreAdapter.notifyDataSetChanged();
+        mPlayMusicService.setTracks(mTracks);
     }
 
     @Override
@@ -112,9 +137,13 @@ public class GenreActivity extends AppCompatActivity implements GenreContract.Vi
 
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onTrackClick(Track track) {
-        Intent intent = PlayMusicActivity.getIntent(GenreActivity.this, mTracks);
+        mPlayMusicService.setTrack(track);
+        Intent intent1 = new Intent(this, PlayMusicService.class);
+        this.startService(intent1);
+        Intent intent = PlayMusicActivity.getIntent(GenreActivity.this);
         startActivity(intent);
     }
 

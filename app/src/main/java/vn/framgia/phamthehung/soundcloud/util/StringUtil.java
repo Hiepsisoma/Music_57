@@ -17,4 +17,13 @@ public class StringUtil {
     public static String initString(String a, String b) {
         return String.format(Constants.STRING_FORMAT, a, b);
     }
+
+    public static String initStreamApi(int trackId) {
+        return String.format(Constants.BASE_URL_STREAM
+                , trackId
+                , BuildConfig.ApiKey);
+    }
+    public static String initImageFull(String url){
+        return url.replace(Constants.STRING_LARGE,Constants.STRING_IMAGE);
+    }
 }
